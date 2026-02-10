@@ -1,0 +1,65 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: renewal_risk
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/scripts/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./backend/scripts/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+
+  server:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: renewal_risk
+      PORT: 3000
+      RMS_WEBHOOK_URL: http://rms-mock:3001/webhook
+      WEBHOOK_MAX_RETRIES: 5
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/nodemon.json:/app/nodemon.json
+      - ./backend/tsconfig.json:/app/tsconfig.json
+    depends_on:
+      - db
+      - rms-mock
+
+  rms-mock:
+    image: node:24-alpine
+    command: node /app/mock-rms.js
+    environment:
+      FAIL_RATE: 0
+      DELAY_MS: 0
+    volumes:
+      - ./backend/mock-rms.js:/app/mock-rms.js
+    ports:
+      - "3001:3001"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    command: npm run dev -- --host
+    environment:
+      VITE_API_URL: http://localhost:3000/api/v1
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+
+volumes:
+  pgdata:
