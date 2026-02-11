@@ -120,4 +120,4 @@ Given the strict timeframe (2 hours), AI assistance was leveraged to accelerate 
 
 ## Honest Self-Reflection
 
-I must be honest about the following: even with the help of AI, the development of this project took me more around 3 hours. However, without the help of AI, this entire setup could have easily taken me a full working day.
+I must be honest about the following: even with the help of AI, the development of this project took me more than 2 hours, it took me around 3:30 hours. However, without the help of AI, this entire setup could have easily taken me a full working day.
